@@ -1,9 +1,4 @@
-chrome.runtime.onInstalled.addListener(function() {
-  // 拡張機能がインストールされたときに行う処理
-  console.log("拡張機能がインストールされました。");
-});
-
-chrome.runtime.onInstalled.addListener(function() {
+chrome.runtime.onInstalled.addListener(function () {
   chrome.contextMenus.create({
     id: "some-menu-item",
     title: "コードレビュー用プロンプトを貼り付ける",
@@ -11,15 +6,15 @@ chrome.runtime.onInstalled.addListener(function() {
   });
 });
 
-chrome.contextMenus.onClicked.addListener(function(info, tab) {
+chrome.contextMenus.onClicked.addListener(function (info, tab) {
   if (info.menuItemId === "some-menu-item") {
-    // テキストの挿入処理
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: insertText
     });
   }
 });
+
 
 function insertText() {
   const textToPaste = `
@@ -76,5 +71,13 @@ function insertText() {
 #### 以下変更差分 ####
 
 `;
-  document.activeElement.value += textToPaste;
+    const activeElement = document.activeElement;
+
+  if (activeElement.tagName === "TEXTAREA" || activeElement.tagName === "INPUT") {
+    activeElement.value += textToPaste;
+  } else if (activeElement.isContentEditable) {
+    activeElement.textContent += textToPaste;
+  } else {
+    alert("選択された要素にテキストを挿入できません。");
+  }
 }
